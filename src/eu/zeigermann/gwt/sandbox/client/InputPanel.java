@@ -1,8 +1,19 @@
 package eu.zeigermann.gwt.sandbox.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DragEnterEvent;
+import com.google.gwt.event.dom.client.DragEnterHandler;
+import com.google.gwt.event.dom.client.DragLeaveEvent;
+import com.google.gwt.event.dom.client.DragLeaveHandler;
+import com.google.gwt.event.dom.client.DragOverEvent;
+import com.google.gwt.event.dom.client.DragOverHandler;
+import com.google.gwt.event.dom.client.DragStartEvent;
+import com.google.gwt.event.dom.client.DragStartHandler;
+import com.google.gwt.event.dom.client.DropEvent;
+import com.google.gwt.event.dom.client.DropHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
@@ -14,6 +25,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.TextBox;
 
 public class InputPanel extends Composite {
@@ -26,6 +38,64 @@ public class InputPanel extends Composite {
 		this.presenter = presenter;
 		init();
 	}
+	
+	private void html5StyleDndSample(Panel root) {
+		final Label label = new Label("DnD");
+		label.getElement().setDraggable(Element.DRAGGABLE_TRUE);
+
+		label.addDragStartHandler(new DragStartHandler() {
+
+			@Override
+			public void onDragStart(DragStartEvent event) {
+				event.setData("id", label.getText());
+				event.getDataTransfer()
+						.setDragImage(label.getElement(), 10, 10);
+//				System.out.println("Start");
+			}
+
+		});
+		root.add(label);
+
+		final Label target = new Label("Drop it here!");
+		target.addDragOverHandler(new DragOverHandler() {
+
+			@Override
+			public void onDragOver(DragOverEvent event) {
+				target.setText("Drop it! NOW!");
+//				System.out.println("Over");
+			}
+		});
+		target.addDragLeaveHandler(new DragLeaveHandler() {
+
+			@Override
+			public void onDragLeave(DragLeaveEvent event) {
+				target.setText("Come back!");
+//				System.out.println("Leave");
+			}
+		});
+
+		target.addDragEnterHandler(new DragEnterHandler() {
+
+			@Override
+			public void onDragEnter(DragEnterEvent event) {
+//				System.out.println("Enter");
+			}
+		});
+
+		target.addDropHandler(new DropHandler() {
+
+			@Override
+			public void onDrop(DropEvent event) {
+				event.preventDefault();
+				String data = event.getData("id");
+				target.setText(data);
+//				System.out.println("Drop");
+			}
+
+		});
+		root.add(target);
+	}
+
 
 	private void init() {
 		final DemoBundle resourceBundle = GWT.create(DemoBundle.class);
@@ -68,6 +138,8 @@ public class InputPanel extends Composite {
 		innerPanel.add(maleCheckBox);
 		innerPanel.add(sendButton);
 		initWidget(innerPanel);
+		
+		html5StyleDndSample(innerPanel);
 		
 		String name = resourceBundle.screenShot().getName();
 		Label label = new Label(name);
